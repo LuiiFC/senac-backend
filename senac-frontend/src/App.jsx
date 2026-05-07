@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
+import EsqueceuSenha from './pages/EsqueceuSenha';
+import NovaSenha from './pages/NovaSenha';
 import Dashboard from './pages/Dashboard';
 import Projetos from './pages/Projetos';
 import ProjetoDetalhe from './pages/ProjetoDetalhe';
@@ -20,6 +22,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
+          <Route path="/esqueceu-senha" element={<EsqueceuSenha />} />
+          <Route path="/nova-senha" element={<NovaSenha />} />
           <Route path="/" element={<Privado><Dashboard /></Privado>} />
           <Route path="/projetos" element={<Privado><Projetos /></Privado>} />
           <Route path="/projetos/:id" element={<Privado><ProjetoDetalhe /></Privado>} />

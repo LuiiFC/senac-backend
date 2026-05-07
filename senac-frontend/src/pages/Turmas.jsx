@@ -14,7 +14,7 @@ export default function Turmas() {
   const [matriculas, setMatriculas] = useState([]);
   const [alunoSelecionado, setAlunoSelecionado] = useState('');
 
-const carregar = async () => {
+  const carregar = async () => {
     const [turmasRes, usuariosRes] = await Promise.all([
       api.get('/turmas'),
       api.get('/usuarios'),
@@ -32,7 +32,10 @@ const carregar = async () => {
     }
   };
 
-  useEffect(() => { carregar(); }, []);
+ useEffect(() => {
+    const init = async () => { await carregar(); };
+    init();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -100,7 +103,7 @@ const carregar = async () => {
           </form>
         )}
 
-        {alunosSemTurma.length > 0 && (
+        {alunosSemTurma.length > 0 && usuario?.tipo !== 'aluno' && (
           <div style={styles.alertBox}>
             <p style={styles.alertTitulo}>⚠️ Alunos sem turma ({alunosSemTurma.length})</p>
             <p style={styles.alertSub}>Expanda uma turma abaixo para adicionar esses alunos</p>
@@ -122,9 +125,11 @@ const carregar = async () => {
                   <p style={styles.cardInfo}>📅 {t.ano} — {t.semestre}º Semestre</p>
                   {t.usuarios && <p style={styles.cardInfo}>👤 {t.usuarios.nome}</p>}
                 </div>
-                <button style={styles.btnExpand} onClick={() => expandirTurma(t.id)}>
-                  {turmaExpandida === t.id ? '▲ Fechar' : '▼ Gerenciar'}
-                </button>
+                {usuario?.tipo !== 'aluno' && (
+                  <button style={styles.btnExpand} onClick={() => expandirTurma(t.id)}>
+                    {turmaExpandida === t.id ? '▲ Fechar' : '▼ Gerenciar'}
+                  </button>
+                )}
               </div>
 
               {turmaExpandida === t.id && (

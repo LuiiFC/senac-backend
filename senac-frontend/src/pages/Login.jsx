@@ -45,6 +45,11 @@ export default function Login() {
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
           <p style={styles.linkText}>
+            <Link to="/esqueceu-senha" style={{ color: '#888', fontSize: 13, fontFamily: 'sans-serif' }}>
+              Esqueceu sua senha?
+            </Link>
+          </p>
+          <p style={styles.linkText}>
             Aluno? <Link to="/registro" style={{ color: '#C8102E', fontWeight: 600 }}>Cadastre-se aqui</Link>
           </p>
         </form>
@@ -64,5 +69,5 @@ const styles = {
   input: { width: '100%', padding: '10px 14px', border: '1.5px solid #ddd', borderRadius: 8, fontSize: 14, fontFamily: 'sans-serif', outline: 'none', boxSizing: 'border-box' },
   erro: { color: '#C8102E', fontSize: 13, marginBottom: 12, fontFamily: 'sans-serif' },
   btn: { width: '100%', padding: '12px', background: '#C8102E', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'sans-serif', marginBottom: 12 },
-  linkText: { textAlign: 'center', fontSize: 13, fontFamily: 'sans-serif', color: '#666', margin: 0 },
+  linkText: { textAlign: 'center', fontSize: 13, fontFamily: 'sans-serif', color: '#666', margin: '8px 0 0' },
 };

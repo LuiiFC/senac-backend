@@ -1,19 +1,19 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-const links = [
-  { path: '/', label: '🏠 Dashboard' },
-  { path: '/projetos', label: '📁 Projetos' },
-  { path: '/turmas', label: '🎓 Turmas' },
-  { path: '/usuarios', label: '👥 Usuários' },
-];
-
 export default function Sidebar() {
   const { pathname } = useLocation();
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => { logout(); navigate('/login'); };
+
+  const links = [
+    { path: '/', label: '🏠 Dashboard' },
+    { path: '/projetos', label: '📁 Projetos' },
+    { path: '/turmas', label: '🎓 Turmas' },
+    ...(usuario?.tipo !== 'aluno' ? [{ path: '/usuarios', label: '👥 Usuários' }] : []),
+  ];
 
   return (
     <div style={styles.sidebar}>

@@ -2,12 +2,17 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import api from '../api/api';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Projetos() {
+  const { usuario } = useAuth();
   const [projetos, setProjetos] = useState([]);
   const [turmas, setTurmas] = useState([]);
   const [form, setForm] = useState({ titulo: '', descricao: '', turma_id: '' });
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [arquivo, setArquivo] = useState(null);
+  const [uploadando, setUploadando] = useState(false);
+  const [drag, setDrag] = useState(false);
   const navigate = useNavigate();
 
   const carregar = () => {
@@ -18,12 +23,41 @@ export default function Projetos() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await api.post('/projetos', form);
+    const rota = usuario?.tipo === 'aluno' ? '/projetos/aluno' : '/projetos';
+    const res = await api.post(rota, form);
+    const novoProjeto = res.data;
+    
+
+    if (arquivo) {
+      await enviarArquivo(novoProjeto.id);
+    }
+
     setMostrarForm(false);
+    setForm({ titulo: '', descricao: '', turma_id: '' });
+    setArquivo(null);
     carregar();
   };
 
+  const enviarArquivo = async (id) => {
+    setUploadando(true);
+    const formData = new FormData();
+    formData.append('arquivo', arquivo);
+    await api.post(`/projetos/${id}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    setUploadando(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDrag(false);
+    const file = e.dataTransfer.files[0];
+    if (file) setArquivo(file);
+  };
+
   const cores = { em_andamento: '#1565C0', concluido: '#1A7A4A', arquivado: '#999' };
+
+  const tiposAceitos = '.py,.pptx,.pdf,.zip,.rar,.exe,.ipynb,.docx,.xlsx,.txt,.mp4,.png,.jpg,.jpeg';
 
   return (
     <div style={styles.layout}>
@@ -33,12 +67,19 @@ export default function Projetos() {
           <h1 style={styles.titulo}>Projetos</h1>
           <button style={styles.btn} onClick={() => setMostrarForm(!mostrarForm)}>+ Novo Projeto</button>
         </div>
+
         {mostrarForm && (
           <form onSubmit={handleSubmit} style={styles.form}>
             <h3 style={{ marginBottom: 16 }}>Cadastrar Projeto</h3>
             <div style={styles.grid}>
-              <div style={{ gridColumn: '1/-1' }}><label style={styles.label}>Título</label><input style={styles.input} value={form.titulo} onChange={e => setForm({...form, titulo: e.target.value})} required /></div>
-              <div style={{ gridColumn: '1/-1' }}><label style={styles.label}>Descrição</label><textarea style={{ ...styles.input, height: 80, resize: 'vertical' }} value={form.descricao} onChange={e => setForm({...form, descricao: e.target.value})} /></div>
+              <div style={{ gridColumn: '1/-1' }}>
+                <label style={styles.label}>Título</label>
+                <input style={styles.input} value={form.titulo} onChange={e => setForm({...form, titulo: e.target.value})} required />
+              </div>
+              <div style={{ gridColumn: '1/-1' }}>
+                <label style={styles.label}>Descrição</label>
+                <textarea style={{ ...styles.input, height: 80, resize: 'vertical' }} value={form.descricao} onChange={e => setForm({...form, descricao: e.target.value})} />
+              </div>
               <div>
                 <label style={styles.label}>Turma</label>
                 <select style={styles.input} value={form.turma_id} onChange={e => setForm({...form, turma_id: e.target.value})} required>
@@ -47,19 +88,58 @@ export default function Projetos() {
                 </select>
               </div>
             </div>
-            <button style={styles.btn} type="submit">Salvar</button>
+
+            {/* Área de upload */}
+            <div
+              style={{ ...styles.dropZone, ...(drag ? styles.dropZoneAtivo : {}) }}
+              onDragOver={e => { e.preventDefault(); setDrag(true); }}
+              onDragLeave={() => setDrag(false)}
+              onDrop={handleDrop}
+            >
+              {arquivo ? (
+                <div style={styles.arquivoSelecionado}>
+                  <span style={styles.arquivoIcone}>📎</span>
+                  <div>
+                    <p style={styles.arquivoNome}>{arquivo.name}</p>
+                    <p style={styles.arquivoTamanho}>{(arquivo.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </div>
+                  <button type="button" style={styles.btnRemover} onClick={() => setArquivo(null)}>✕</button>
+                </div>
+              ) : (
+                <div style={styles.dropConteudo}>
+                  <span style={{ fontSize: 40 }}>📂</span>
+                  <p style={styles.dropTexto}>Arraste seu arquivo aqui</p>
+                  <p style={styles.dropSub}>ou clique para selecionar</p>
+                  <p style={styles.dropTipos}>Python, PowerPoint, PDF, ZIP, EXE, Notebook, Word, Excel e mais</p>
+                  <input
+                    type="file"
+                    accept={tiposAceitos}
+                    style={styles.inputFile}
+                    onChange={e => setArquivo(e.target.files[0])}
+                  />
+                </div>
+              )}
+            </div>
+
+            <button style={styles.btn} type="submit" disabled={uploadando}>
+              {uploadando ? 'Enviando arquivo...' : 'Salvar Projeto'}
+            </button>
           </form>
         )}
+
         <div style={styles.cards}>
           {projetos.map(p => (
             <div key={p.id} style={styles.card} onClick={() => navigate(`/projetos/${p.id}`)}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <p style={styles.cardTitulo}>{p.titulo}</p>
-                <span style={{ ...styles.badge, background: cores[p.status] + '20', color: cores[p.status] }}>{p.status.replace('_', ' ')}</span>
+                <span style={{ ...styles.badge, background: cores[p.status] + '20', color: cores[p.status] }}>
+                  {p.status.replace('_', ' ')}
+                </span>
               </div>
               <p style={styles.cardDesc}>{p.descricao || 'Sem descrição'}</p>
               {p.turmas && <p style={styles.cardInfo}>🎓 {p.turmas.nome} — {p.turmas.curso}</p>}
               {p.usuarios && <p style={styles.cardInfo}>👨‍🏫 {p.usuarios.nome}</p>}
+              {p.arquivo_url && <p style={styles.cardArquivo}>📎 Arquivo anexado</p>}
             </div>
           ))}
         </div>
@@ -78,10 +158,23 @@ const styles = {
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16, marginBottom: 16 },
   label: { display: 'block', fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4 },
   input: { width: '100%', padding: '8px 12px', border: '1.5px solid #ddd', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' },
+  dropZone: { border: '2px dashed #ddd', borderRadius: 12, padding: 24, textAlign: 'center', marginBottom: 16, cursor: 'pointer', position: 'relative', transition: 'all 0.2s', background: '#FAFAFA' },
+  dropZoneAtivo: { border: '2px dashed #C8102E', background: '#FFF5F5' },
+  dropConteudo: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 },
+  dropTexto: { fontWeight: 600, color: '#333', fontSize: 15, margin: 0 },
+  dropSub: { color: '#888', fontSize: 13, margin: 0 },
+  dropTipos: { color: '#aaa', fontSize: 11, margin: 0 },
+  inputFile: { position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' },
+  arquivoSelecionado: { display: 'flex', alignItems: 'center', gap: 12 },
+  arquivoIcone: { fontSize: 32 },
+  arquivoNome: { fontWeight: 600, color: '#1A1A1A', margin: 0, fontSize: 14 },
+  arquivoTamanho: { color: '#888', fontSize: 12, margin: 0 },
+  btnRemover: { marginLeft: 'auto', background: '#fee', color: '#C8102E', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontWeight: 700 },
   cards: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 },
   card: { background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', cursor: 'pointer', borderTop: '4px solid #C8102E' },
   cardTitulo: { fontWeight: 700, fontSize: 16, color: '#1A1A1A', margin: '0 0 8px', flex: 1 },
   cardDesc: { color: '#666', fontSize: 13, margin: '0 0 12px', lineHeight: 1.5 },
   cardInfo: { color: '#888', fontSize: 12, margin: '4px 0' },
+  cardArquivo: { color: '#1565C0', fontSize: 12, margin: '8px 0 0', fontWeight: 600 },
   badge: { padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' },
 };
