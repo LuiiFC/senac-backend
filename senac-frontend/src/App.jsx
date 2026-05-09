@@ -10,8 +10,7 @@ import ProjetoDetalhe from './pages/ProjetoDetalhe';
 import Usuarios from './pages/Usuarios';
 import Turmas from './pages/Turmas';
 import AlterarSenha from './pages/AlterarSenha';
-// dentro das Routes:
-<Route path="/alterar-senha" element={<Privado><AlterarSenha /></Privado>} />
+
 function Privado({ children }) {
   const { usuario } = useAuth();
   return usuario ? children : <Navigate to="/login" />;
@@ -31,6 +30,7 @@ export default function App() {
           <Route path="/projetos/:id" element={<Privado><ProjetoDetalhe /></Privado>} />
           <Route path="/usuarios" element={<Privado><Usuarios /></Privado>} />
           <Route path="/turmas" element={<Privado><Turmas /></Privado>} />
+          <Route path="/alterar-senha" element={<Privado><AlterarSenha /></Privado>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

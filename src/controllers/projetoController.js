@@ -90,3 +90,32 @@ exports.uploadArquivo = async (req, res) => {
 
   res.json({ url: urlData.publicUrl });
 };
+
+exports.uploadArquivo = async (req, res) => {
+  const { id } = req.params;
+  const arquivo = req.file;
+
+  if (!arquivo) return res.status(400).json({ erro: 'Nenhum arquivo enviado' });
+
+  const nomeArquivo = `${Date.now()}_${arquivo.originalname}`;
+
+  const { data, error } = await supabase.storage
+    .from('projetos')
+    .upload(nomeArquivo, arquivo.buffer, {
+      contentType: arquivo.mimetype,
+      upsert: false,
+    });
+
+  if (error) return res.status(400).json({ erro: error.message });
+
+  const { data: urlData } = supabase.storage
+    .from('projetos')
+    .getPublicUrl(nomeArquivo);
+
+  await supabase
+    .from('projetos')
+    .update({ arquivo_url: urlData.publicUrl })
+    .eq('id', id);
+
+  res.json({ url: urlData.publicUrl });
+};

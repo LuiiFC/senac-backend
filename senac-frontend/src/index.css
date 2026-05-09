@@ -109,3 +109,38 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: sans-serif;
+  background: #F8F7F5;
+}
+
+/* Responsivo geral */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none !important;
+  }
+
+  .main-content {
+    padding: 16px !important;
+  }
+
+  .grid-cards {
+    grid-template-columns: 1fr !important;
+  }
+
+  .tabela-header {
+    display: none !important;
+  }
+
+  .tabela-row {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+  }
+}
