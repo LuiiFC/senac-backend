@@ -1,15 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const supabase = require('../config/supabase');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 exports.login = async (req, res) => {
   const { email, senha } = req.body;
@@ -73,13 +67,10 @@ exports.esqueceuSenha = async (req, res) => {
   const novaSenha = Math.random().toString(36).slice(-8);
   const senha_hash = await bcrypt.hash(novaSenha, 10);
 
-  await supabase
-    .from('usuarios')
-    .update({ senha_hash })
-    .eq('id', usuario.id);
+  await supabase.from('usuarios').update({ senha_hash }).eq('id', usuario.id);
 
-  await transporter.sendMail({
-    from: `"SENAC Projetos" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: 'SENAC Projetos <onboarding@resend.dev>',
     to: email,
     subject: 'Recuperação de Senha — SENAC',
     html: `
@@ -90,12 +81,11 @@ exports.esqueceuSenha = async (req, res) => {
         </div>
         <div style="background: #fff; padding: 32px; border: 1px solid #eee; border-radius: 0 0 12px 12px;">
           <p>Olá, <strong>${usuario.nome}</strong>!</p>
-          <p>Recebemos uma solicitação de recuperação de senha para sua conta.</p>
           <p>Sua nova senha temporária é:</p>
           <div style="background: #F8F7F5; border: 2px dashed #C8102E; border-radius: 8px; padding: 16px; text-align: center; margin: 20px 0;">
             <span style="font-size: 24px; font-weight: 700; color: #C8102E; letter-spacing: 2px;">${novaSenha}</span>
           </div>
-          <p style="color: #666; font-size: 13px;">Por segurança, recomendamos que você altere essa senha após fazer login.</p>
+          <p style="color: #666; font-size: 13px;">Recomendamos alterar essa senha após fazer login.</p>
           <p style="color: #999; font-size: 12px;">Se você não solicitou a recuperação de senha, ignore este email.</p>
         </div>
       </div>
@@ -103,4 +93,23 @@ exports.esqueceuSenha = async (req, res) => {
   });
 
   res.json({ mensagem: 'Email enviado com sucesso' });
+};
+
+exports.alterarSenha = async (req, res) => {
+  const { senhaAtual, novaSenha } = req.body;
+  const id = req.usuario.id;
+
+  const { data: usuario } = await supabase
+    .from('usuarios')
+    .select('senha_hash')
+    .eq('id', id)
+    .single();
+
+  const senhaCorreta = await bcrypt.compare(senhaAtual, usuario.senha_hash);
+  if (!senhaCorreta) return res.status(401).json({ erro: 'Senha atual incorreta' });
+
+  const senha_hash = await bcrypt.hash(novaSenha, 10);
+  await supabase.from('usuarios').update({ senha_hash }).eq('id', id);
+
+  res.json({ mensagem: 'Senha alterada com sucesso' });
 };

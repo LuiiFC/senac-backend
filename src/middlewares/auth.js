@@ -1,28 +1,28 @@
+// src/middlewares/auth.js
 const jwt = require('jsonwebtoken');
 
-const verificar = (req, res, next) => {
+const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ erro: 'Token não fornecido' });
+
+  if (!token) {
+    return res.status(401).json({ erro: 'Token não fornecido' });
+  }
+
   try {
     req.usuario = jwt.verify(token, process.env.JWT_SECRET);
     next();
-  } catch {
-    return res.status(401).json({ erro: 'Token inválido' });
+  } catch (err) {
+    return res.status(401).json({ erro: 'Token inválido ou expirado' });
   }
 };
 
-const apenas = (...tipos) => (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ erro: 'Token não fornecido' });
-  try {
-    req.usuario = jwt.verify(token, process.env.JWT_SECRET);
-    if (!tipos.includes(req.usuario.tipo))
-      return res.status(403).json({ erro: 'Acesso negado' });
+const apenas = (...tiposPermitidos) => {
+  return (req, res, next) => {
+    if (!req.usuario || !tiposPermitidos.includes(req.usuario.tipo)) {
+      return res.status(403).json({ erro: 'Acesso negado. Permissão insuficiente.' });
+    }
     next();
-  } catch {
-    return res.status(401).json({ erro: 'Token inválido' });
-  }
+  };
 };
 
-module.exports = verificar;
-module.exports.apenas = apenas;
+module.exports = { auth, apenas };

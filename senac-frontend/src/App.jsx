@@ -9,7 +9,9 @@ import Projetos from './pages/Projetos';
 import ProjetoDetalhe from './pages/ProjetoDetalhe';
 import Usuarios from './pages/Usuarios';
 import Turmas from './pages/Turmas';
-
+import AlterarSenha from './pages/AlterarSenha';
+// dentro das Routes:
+<Route path="/alterar-senha" element={<Privado><AlterarSenha /></Privado>} />
 function Privado({ children }) {
   const { usuario } = useAuth();
   return usuario ? children : <Navigate to="/login" />;
