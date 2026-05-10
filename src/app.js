@@ -3,7 +3,11 @@ const cors = require('cors');
 const app = express();
 const turmaCtrl = require('./controllers/turmaController');
 
-app.use(cors());
+app.use(cors({
+  origin: ['https://senac-frontend.vercel.app', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 
 // Rotas públicas e especiais
