@@ -119,3 +119,12 @@ exports.uploadArquivo = async (req, res) => {
 
   res.json({ url: urlData.publicUrl });
 };
+
+exports.deletar = async (req, res) => {
+  const { error } = await supabase
+    .from('projetos')
+    .delete()
+    .eq('id', req.params.id);
+  if (error) return res.status(400).json({ erro: error.message });
+  res.json({ mensagem: 'Projeto deletado com sucesso' });
+};

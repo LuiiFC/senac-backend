@@ -3,9 +3,11 @@ import { useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import AvaliacaoCard from '../components/AvaliacaoCard';
 import api from '../api/api';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ProjetoDetalhe() {
   const { id } = useParams();
+  const { usuario } = useAuth();
   const [projeto, setProjeto] = useState(null);
   const [avaliacoes, setAvaliacoes] = useState([]);
   const [form, setForm] = useState({ nota: '', comentario: '' });
@@ -18,7 +20,10 @@ export default function ProjetoDetalhe() {
 
   const handleAvaliar = async (e) => {
     e.preventDefault();
-    await api.post(`/avaliacoes/${id}`, { nota: parseFloat(form.nota), comentario: form.comentario });
+    await api.post(`/avaliacoes/${id}`, {
+      nota: usuario?.tipo === 'aluno' ? null : parseFloat(form.nota),
+      comentario: form.comentario
+    });
     setForm({ nota: '', comentario: '' });
     carregar();
   };
@@ -44,6 +49,16 @@ export default function ProjetoDetalhe() {
             </div>
           </div>
           {projeto.descricao && <p style={styles.desc}>{projeto.descricao}</p>}
+
+          {projeto.arquivo_url && (
+            <div style={styles.arquivoBox}>
+              <p style={styles.sectionLabel}>📎 Arquivo do projeto</p>
+              <a href={projeto.arquivo_url} target="_blank" rel="noopener noreferrer" style={styles.btnDownload}>
+                ⬇️ Baixar / Visualizar arquivo
+              </a>
+            </div>
+          )}
+
           {projeto.projeto_alunos?.length > 0 && (
             <div style={styles.alunosBox}>
               <p style={styles.sectionLabel}>👥 Alunos participantes</p>
@@ -59,10 +74,12 @@ export default function ProjetoDetalhe() {
         <div style={styles.card}>
           <h2 style={styles.sectionTitulo}>✍️ Avaliar Projeto</h2>
           <form onSubmit={handleAvaliar} style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            <div>
-              <label style={styles.label}>Nota (0–10)</label>
-              <input style={{ ...styles.input, width: 100 }} type="number" min="0" max="10" step="0.1" value={form.nota} onChange={e => setForm({...form, nota: e.target.value})} required />
-            </div>
+            {usuario?.tipo !== 'aluno' && (
+              <div>
+                <label style={styles.label}>Nota (0–10)</label>
+                <input style={{ ...styles.input, width: 100 }} type="number" min="0" max="10" step="0.1" value={form.nota} onChange={e => setForm({...form, nota: e.target.value})} required />
+              </div>
+            )}
             <div style={{ flex: 1, minWidth: 200 }}>
               <label style={styles.label}>Comentário</label>
               <input style={styles.input} value={form.comentario} onChange={e => setForm({...form, comentario: e.target.value})} placeholder="Escreva sua avaliação..." required />
@@ -91,6 +108,8 @@ const styles = {
   mediaBox: { textAlign: 'center', background: '#F8F7F5', borderRadius: 12, padding: '12px 20px' },
   mediaNum: { fontSize: 32, fontWeight: 700, color: '#C8102E', margin: 0 },
   mediaLabel: { color: '#666', fontSize: 12, margin: 0 },
+  arquivoBox: { marginTop: 16, paddingTop: 16, borderTop: '1px solid #F0F0F0' },
+  btnDownload: { display: 'inline-block', background: '#1565C0', color: '#fff', padding: '10px 20px', borderRadius: 8, textDecoration: 'none', fontSize: 14, fontWeight: 600, marginTop: 8 },
   alunosBox: { marginTop: 16, paddingTop: 16, borderTop: '1px solid #F0F0F0' },
   sectionLabel: { color: '#555', fontSize: 13, fontWeight: 600, marginBottom: 8 },
   alunoTag: { background: '#E3F0FF', color: '#1565C0', padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 500 },

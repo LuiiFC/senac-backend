@@ -10,7 +10,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Rotas públicas e especiais
 app.get('/api/turmas/publicas', turmaCtrl.listarPublicas);
 app.get('/api/turmas/matriculas/todas', turmaCtrl.listarTodasMatriculas);
 
@@ -19,5 +18,6 @@ app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/turmas', require('./routes/turmas'));
 app.use('/api/projetos', require('./routes/projetos'));
 app.use('/api/avaliacoes', require('./routes/avaliacoes'));
+app.use('/api/categorias', require('./routes/categorias'));
 
 module.exports = app;
