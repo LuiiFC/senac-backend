@@ -11,5 +11,6 @@ router.post('/aluno', auth, apenas('aluno'), ctrl.enviarAluno);
 router.get('/:id', auth, ctrl.buscarPorId);
 router.post('/:id/upload', auth, upload.single('arquivo'), ctrl.uploadArquivo);
 router.delete('/:id', auth, apenas('coordenador'), ctrl.deletar);
+router.patch('/:id/categoria', auth, apenas('coordenador'), ctrl.vincularCategoria);
 
 module.exports = router;

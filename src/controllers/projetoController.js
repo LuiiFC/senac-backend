@@ -128,3 +128,17 @@ exports.deletar = async (req, res) => {
   if (error) return res.status(400).json({ erro: error.message });
   res.json({ mensagem: 'Projeto deletado com sucesso' });
 };
+
+exports.vincularCategoria = async (req, res) => {
+  const { categoria_id } = req.body;
+  const { id } = req.params;
+
+  const { data, error } = await supabase
+    .from('projetos')
+    .update({ categoria_id })
+    .eq('id', id)
+    .select().single();
+
+  if (error) return res.status(400).json({ erro: error.message });
+  res.json(data);
+};

@@ -16,6 +16,7 @@ export default function Sidebar() {
     { path: '/turmas', label: '🎓 Turmas' },
     ...(usuario?.tipo !== 'aluno' ? [{ path: '/usuarios', label: '👥 Usuários' }] : []),
     { path: '/alterar-senha', label: '🔒 Alterar Senha' },
+    { path: '/categorias', label: '📂 Pastas' },
   ];
 
   return (
