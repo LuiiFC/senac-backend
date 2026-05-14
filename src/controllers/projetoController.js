@@ -1,9 +1,42 @@
 const supabase = require('../config/supabase');
 
 exports.listar = async (req, res) => {
-  const { data, error } = await supabase
+  const { id, tipo, curso_vinculo } = req.usuario;
+
+  let query = supabase
     .from('projetos')
     .select('*, turmas(nome, curso), usuarios!professor_orientador_id(nome), projeto_alunos(aluno_id, usuarios(nome))');
+
+  if (tipo === 'aluno') {
+    // aluno vê apenas seus próprios projetos
+    const { data: ids } = await supabase
+      .from('projeto_alunos')
+      .select('projeto_id')
+      .eq('aluno_id', id);
+    const projetoIds = ids?.map(p => p.projeto_id) || [];
+    if (projetoIds.length === 0) return res.json([]);
+    query = query.in('id', projetoIds);
+  } else if (tipo === 'professor') {
+    // professor vê projetos das turmas do seu curso
+    const { data: turmas } = await supabase
+      .from('turmas')
+      .select('id')
+      .eq('curso', curso_vinculo);
+    const turmaIds = turmas?.map(t => t.id) || [];
+    if (turmaIds.length === 0) return res.json([]);
+    query = query.in('turma_id', turmaIds);
+  } else if (tipo === 'coordenador') {
+    // coordenador vê apenas projetos do seu curso
+    const { data: turmas } = await supabase
+      .from('turmas')
+      .select('id')
+      .eq('curso', curso_vinculo);
+    const turmaIds = turmas?.map(t => t.id) || [];
+    if (turmaIds.length === 0) return res.json([]);
+    query = query.in('turma_id', turmaIds);
+  }
+
+  const { data, error } = await query;
   if (error) return res.status(400).json({ erro: error.message });
   res.json(data);
 };

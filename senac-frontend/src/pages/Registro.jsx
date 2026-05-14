@@ -66,16 +66,16 @@ useEffect(() => {
 }
 
 const styles = {
-  container: { minHeight: '100vh', background: '#C8102E', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  container: { minHeight: '100vh', background: '#003366', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   card: { background: '#fff', borderRadius: 16, padding: 40, width: 400, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' },
   logo: { textAlign: 'center', marginBottom: 24 },
-  logoText: { background: '#C8102E', color: '#fff', fontWeight: 700, fontSize: 28, padding: '6px 20px', borderRadius: 8, fontFamily: 'sans-serif' },
+  logoText: { background: '#FF6B35', color: '#fff', fontWeight: 700, fontSize: 28, padding: '6px 20px', borderRadius: 8, fontFamily: 'sans-serif' },
   logoSub: { color: '#666', fontSize: 13, marginTop: 8, fontFamily: 'sans-serif' },
   field: { marginBottom: 14 },
   label: { display: 'block', fontSize: 12, fontWeight: 600, color: '#333', marginBottom: 4, fontFamily: 'sans-serif' },
   input: { width: '100%', padding: '9px 12px', border: '1.5px solid #ddd', borderRadius: 8, fontSize: 14, fontFamily: 'sans-serif', boxSizing: 'border-box' },
   erro: { color: '#C8102E', fontSize: 13, marginBottom: 10, fontFamily: 'sans-serif' },
   sucesso: { background: '#E8F5EE', color: '#1A7A4A', padding: 16, borderRadius: 8, fontSize: 14, fontFamily: 'sans-serif', textAlign: 'center' },
-  btn: { width: '100%', padding: '11px', background: '#C8102E', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'sans-serif', marginBottom: 12 },
+  btn: { width: '100%', padding: '11px', background: '#FF6B35', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'sans-serif', marginBottom: 12 },
   linkText: { textAlign: 'center', fontSize: 13, fontFamily: 'sans-serif', color: '#666', margin: 0 },
 };

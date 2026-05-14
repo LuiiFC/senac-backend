@@ -19,18 +19,23 @@ export default function ProjetoDetalhe() {
   useEffect(() => { carregar(); }, [id]);
 
   const handleAvaliar = async (e) => {
-    e.preventDefault();
-    await api.post(`/avaliacoes/${id}`, {
-      nota: usuario?.tipo === 'aluno' ? null : parseFloat(form.nota),
-      comentario: form.comentario
-    });
-    setForm({ nota: '', comentario: '' });
-    carregar();
-  };
+  e.preventDefault();
+  await api.post(`/avaliacoes/${id}`, {
+    nota: (usuario?.tipo === 'professor' || usuario?.tipo === 'coordenador')
+      ? parseFloat(form.nota)
+      : null,
+    comentario: form.comentario
+  });
+  setForm({ nota: '', comentario: '' });
+  carregar();
+};
 
   if (!projeto) return <div style={{ padding: 40, fontFamily: 'sans-serif' }}>Carregando...</div>;
 
-  const media = avaliacoes.length ? (avaliacoes.reduce((s, a) => s + (a.nota || 0), 0) / avaliacoes.length).toFixed(1) : '—';
+const avaliacoesComNota = avaliacoes.filter(a => a.nota !== null && a.nota !== undefined);
+const media = avaliacoesComNota.length 
+  ? (avaliacoesComNota.reduce((s, a) => s + a.nota, 0) / avaliacoesComNota.length).toFixed(1) 
+  : '—';
 
   return (
     <div style={styles.layout}>
@@ -71,22 +76,36 @@ export default function ProjetoDetalhe() {
           )}
         </div>
 
-        <div style={styles.card}>
-          <h2 style={styles.sectionTitulo}>✍️ Avaliar Projeto</h2>
-          <form onSubmit={handleAvaliar} style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            {usuario?.tipo !== 'aluno' && (
-              <div>
-                <label style={styles.label}>Nota (0–10)</label>
-                <input style={{ ...styles.input, width: 100 }} type="number" min="0" max="10" step="0.1" value={form.nota} onChange={e => setForm({...form, nota: e.target.value})} required />
-              </div>
-            )}
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <label style={styles.label}>Comentário</label>
-              <input style={styles.input} value={form.comentario} onChange={e => setForm({...form, comentario: e.target.value})} placeholder="Escreva sua avaliação..." required />
-            </div>
-            <button style={styles.btn} type="submit">Enviar</button>
-          </form>
-        </div>
+       <div style={styles.card}>
+  <h2 style={styles.sectionTitulo}>
+    {usuario?.tipo === 'aluno' ? '💬 Comentar' : '✍️ Avaliar Projeto'}
+  </h2>
+  <form onSubmit={handleAvaliar} style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+    {(usuario?.tipo === 'professor' || usuario?.tipo === 'coordenador') && (
+      <div>
+        <label style={styles.label}>Nota (0–10)</label>
+        <input
+          style={{ ...styles.input, width: 100 }}
+          type="number" min="0" max="10" step="0.1"
+          value={form.nota}
+          onChange={e => setForm({...form, nota: e.target.value})}
+          required
+        />
+      </div>
+    )}
+    <div style={{ flex: 1, minWidth: 200 }}>
+      <label style={styles.label}>Comentário</label>
+      <input
+        style={styles.input}
+        value={form.comentario}
+        onChange={e => setForm({...form, comentario: e.target.value})}
+        placeholder={usuario?.tipo === 'aluno' ? 'Escreva seu comentário...' : 'Escreva sua avaliação...'}
+        required
+      />
+    </div>
+    <button style={styles.btn} type="submit">Enviar</button>
+  </form>
+</div>
 
         <h2 style={{ ...styles.sectionTitulo, marginBottom: 16 }}>💬 Avaliações ({avaliacoes.length})</h2>
         {avaliacoes.length === 0
