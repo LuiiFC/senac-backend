@@ -12,9 +12,18 @@ const auth = (req, res, next) => {
 };
 
 const apenas = (...tiposPermitidos) => (req, res, next) => {
-  if (!req.usuario || !tiposPermitidos.includes(req.usuario.tipo))
-    return res.status(403).json({ erro: 'Acesso negado.' });
-  next();
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ erro: 'Token não fornecido' });
+  try {
+    req.usuario = jwt.verify(token, process.env.JWT_SECRET);
+    // admin tem acesso a tudo
+    if (req.usuario.tipo === 'admin') return next();
+    if (!tiposPermitidos.includes(req.usuario.tipo))
+      return res.status(403).json({ erro: 'Acesso negado.' });
+    next();
+  } catch {
+    return res.status(401).json({ erro: 'Token inválido' });
+  }
 };
 
 module.exports = auth;
