@@ -11,19 +11,26 @@ export default function Sidebar() {
   const handleLogout = () => { logout(); navigate('/login'); };
 
   const getLabelProjetos = () => {
-  if (usuario?.tipo === 'aluno') return '📁 Meus Projetos';
-  if (usuario?.tipo === 'professor') return '📁 Projetos das Turmas';
-  return '📁 Projetos do Curso';
-};
+    if (usuario?.tipo === 'aluno') return '📁 Meus Projetos';
+    if (usuario?.tipo === 'professor') return '📁 Projetos das Turmas';
+    if (usuario?.tipo === 'empresa_parceira') return '📁 Projetos';
+    return '📁 Projetos do Curso';
+  };
 
-const links = [
-  { path: '/', label: '🏠 Dashboard' },
-  { path: '/projetos', label: getLabelProjetos() },
-  { path: '/turmas', label: '🎓 Turmas' },
-  ...(usuario?.tipo !== 'aluno' ? [{ path: '/usuarios', label: '👥 Usuários' }] : []),
-  { path: '/categorias', label: '📂 Pastas' },
-  { path: '/alterar-senha', label: '🔒 Alterar Senha' },
-];
+  const links = [
+    { path: '/', label: '🏠 Dashboard' },
+    { path: '/projetos', label: getLabelProjetos() },
+    { path: '/turmas', label: '🎓 Turmas' },
+    ...(usuario?.tipo === 'admin' ? [
+      { path: '/usuarios', label: '👥 Usuários' },
+      { path: '/empresas', label: '🏢 Empresas Parceiras' },
+    ] : []),
+    ...(usuario?.tipo === 'coordenador' ? [
+      { path: '/usuarios', label: '👥 Usuários' },
+    ] : []),
+    { path: '/categorias', label: '📂 Pastas' },
+    { path: '/alterar-senha', label: '🔒 Alterar Senha' },
+  ];
 
   return (
     <>
@@ -45,7 +52,7 @@ const links = [
           <div style={styles.avatar}>{usuario?.nome?.[0]}</div>
           <div>
             <p style={styles.userName}>{usuario?.nome}</p>
-            <p style={styles.userTipo}>{usuario?.tipo}</p>
+            <p style={styles.userTipo}>{usuario?.tipo === 'empresa_parceira' ? 'Empresa Parceira' : usuario?.tipo}</p>
           </div>
         </div>
         <nav style={styles.nav}>
@@ -67,113 +74,21 @@ const links = [
 }
 
 const styles = {
-  mobileHeader: {
-    display: 'none',
-    position: 'fixed',
-    top: 0, left: 0, right: 0,
-    background: '#003366',
-    padding: '12px 20px',
-    zIndex: 1000,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  mobileLogo: {
-    background: '#fff',
-    color: '#003366',
-    fontWeight: 700,
-    fontSize: 18,
-    padding: '4px 12px',
-    borderRadius: 6,
-    fontFamily: 'sans-serif',
-  },
-  hamburger: {
-    background: 'transparent',
-    border: 'none',
-    color: '#fff',
-    fontSize: 24,
-    cursor: 'pointer',
-  },
-  overlay: {
-    position: 'fixed',
-    inset: 0,
-    background: 'rgba(0,0,0,0.5)',
-    zIndex: 998,
-  },
-  sidebar: {
-    width: 220,
-    background: '#003366',
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    padding: '0 0 20px',
-    flexShrink: 0,
-    transition: 'transform 0.3s',
-  },
-  sidebarAberta: {
-    position: 'fixed',
-    top: 0, left: 0,
-    zIndex: 999,
-    height: '100vh',
-  },
+  mobileHeader: { display: 'none', position: 'fixed', top: 0, left: 0, right: 0, background: '#003366', padding: '12px 20px', zIndex: 1000, alignItems: 'center', justifyContent: 'space-between' },
+  mobileLogo: { background: '#fff', color: '#003366', fontWeight: 700, fontSize: 18, padding: '4px 12px', borderRadius: 6, fontFamily: 'sans-serif' },
+  hamburger: { background: 'transparent', border: 'none', color: '#fff', fontSize: 24, cursor: 'pointer' },
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 },
+  sidebar: { width: 220, background: '#003366', minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '0 0 20px', flexShrink: 0, transition: 'transform 0.3s' },
+  sidebarAberta: { position: 'fixed', top: 0, left: 0, zIndex: 999, height: '100vh' },
   logo: { padding: '24px 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.15)' },
-  logoText: {
-    background: '#fff',
-    color: '#003366',
-    fontWeight: 700,
-    fontSize: 20,
-    padding: '4px 12px',
-    borderRadius: 6,
-    fontFamily: 'sans-serif',
-  },
+  logoText: { background: '#fff', color: '#003366', fontWeight: 700, fontSize: 20, padding: '4px 12px', borderRadius: 6, fontFamily: 'sans-serif' },
   logoSub: { color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 8, fontFamily: 'sans-serif' },
-  userBox: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    padding: '16px 20px',
-    borderBottom: '1px solid rgba(255,255,255,0.15)',
-  },
-  avatar: {
-    width: 36, height: 36,
-    borderRadius: '50%',
-    background: 'rgba(255,255,255,0.25)',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: 700,
-    fontSize: 16,
-    fontFamily: 'sans-serif',
-  },
+  userBox: { display: 'flex', alignItems: 'center', gap: 10, padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.15)' },
+  avatar: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, fontFamily: 'sans-serif' },
   userName: { color: '#fff', fontSize: 13, fontWeight: 600, fontFamily: 'sans-serif', margin: 0 },
   userTipo: { color: 'rgba(255,255,255,0.65)', fontSize: 11, fontFamily: 'sans-serif', margin: 0, textTransform: 'capitalize' },
   nav: { flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4 },
-  link: {
-    display: 'block',
-    padding: '10px 14px',
-    borderRadius: 8,
-    color: 'rgba(255,255,255,0.8)',
-    textDecoration: 'none',
-    fontSize: 14,
-    fontFamily: 'sans-serif',
-  },
-  linkActive: {
-    background: 'rgba(255,255,255,0.15)',
-    color: '#fff',
-    fontWeight: 600,
-    borderLeft: '3px solid #FF6B35',
-  },
-  logout: {
-    margin: '0 12px',
-    padding: '10px 14px',
-    background: '#FF6B35',
-    border: 'none',
-    borderRadius: 8,
-    color: '#fff',
-    cursor: 'pointer',
-    fontSize: 14,
-    fontFamily: 'sans-serif',
-    textAlign: 'left',
-    fontWeight: 600,
-  },
+  link: { display: 'block', padding: '10px 14px', borderRadius: 8, color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: 14, fontFamily: 'sans-serif' },
+  linkActive: { background: 'rgba(255,255,255,0.15)', color: '#fff', fontWeight: 600, borderLeft: '3px solid #FF6B35' },
+  logout: { margin: '0 12px', padding: '10px 14px', background: '#FF6B35', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: 14, fontFamily: 'sans-serif', textAlign: 'left', fontWeight: 600 },
 };

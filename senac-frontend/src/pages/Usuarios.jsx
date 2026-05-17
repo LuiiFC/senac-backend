@@ -14,13 +14,23 @@ export default function Usuarios() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await api.post('/auth/cadastrar', form);
-    setMostrarForm(false);
-    setForm({ nome: '', email: '', senha: '', tipo: 'professor', matricula: '', curso_vinculo: '' });
-    carregar();
+    try {
+      await api.post('/auth/cadastrar', form);
+      setMostrarForm(false);
+      setForm({ nome: '', email: '', senha: '', tipo: 'professor', matricula: '', curso_vinculo: '' });
+      carregar();
+    } catch (err) {
+      alert('Erro: ' + (err.response?.data?.erro || err.message));
+    }
   };
 
-  const cores = { aluno: '#1565C0', professor: '#1A7A4A', coordenador: '#C8102E' };
+  const getTiposDisponiveis = () => {
+    if (usuario?.tipo === 'admin') return ['professor', 'coordenador', 'empresa_parceira'];
+    if (usuario?.tipo === 'coordenador') return ['professor'];
+    return [];
+  };
+
+  const cores = { aluno: '#1565C0', professor: '#1A7A4A', coordenador: '#C8102E', admin: '#6B21A8', empresa_parceira: '#B45309' };
 
   return (
     <div style={styles.layout}>
@@ -28,16 +38,18 @@ export default function Usuarios() {
       <main style={styles.main}>
         <div style={styles.header}>
           <h1 style={styles.titulo}>Usuários</h1>
-          {usuario?.tipo === 'coordenador' && (
+          {(usuario?.tipo === 'admin' || usuario?.tipo === 'coordenador') && (
             <button style={styles.btn} onClick={() => setMostrarForm(!mostrarForm)}>
-              + Novo Professor / Coordenador
+              + Novo Usuário
             </button>
           )}
         </div>
 
-        {mostrarForm && usuario?.tipo === 'coordenador' && (
+        {mostrarForm && (
           <form onSubmit={handleSubmit} style={styles.form}>
-            <h3 style={styles.formTitulo}>Cadastrar Professor ou Coordenador</h3>
+            <h3 style={styles.formTitulo}>
+              {usuario?.tipo === 'admin' ? 'Cadastrar Usuário' : 'Cadastrar Professor'}
+            </h3>
             <div style={styles.formGrid}>
               <div>
                 <label style={styles.label}>Nome</label>
@@ -58,14 +70,19 @@ export default function Usuarios() {
               <div>
                 <label style={styles.label}>Tipo</label>
                 <select style={styles.input} value={form.tipo} onChange={e => setForm({...form, tipo: e.target.value})}>
-                  <option value="professor">Professor</option>
-                  <option value="coordenador">Coordenador</option>
+                  {getTiposDisponiveis().map(t => (
+                    <option key={t} value={t}>
+                      {t === 'empresa_parceira' ? 'Empresa Parceira' : t.charAt(0).toUpperCase() + t.slice(1)}
+                    </option>
+                  ))}
                 </select>
               </div>
-              <div>
-                <label style={styles.label}>Curso vinculado</label>
-                <input style={styles.input} value={form.curso_vinculo} onChange={e => setForm({...form, curso_vinculo: e.target.value})} placeholder="Ex: Análise e Desenvolvimento" required />
-              </div>
+              {form.tipo !== 'empresa_parceira' && (
+                <div>
+                  <label style={styles.label}>Curso vinculado</label>
+                  <input style={styles.input} value={form.curso_vinculo} onChange={e => setForm({...form, curso_vinculo: e.target.value})} placeholder="Ex: Análise e Desenvolvimento" />
+                </div>
+              )}
             </div>
             <button style={styles.btn} type="submit">Salvar</button>
           </form>
@@ -83,7 +100,9 @@ export default function Usuarios() {
             <div key={u.id} style={styles.trow}>
               <span style={styles.nome}>{u.nome}</span>
               <span style={styles.cell}>{u.email}</span>
-              <span style={{ ...styles.badge, background: cores[u.tipo] + '20', color: cores[u.tipo] }}>{u.tipo}</span>
+              <span style={{ ...styles.badge, background: (cores[u.tipo] || '#666') + '20', color: cores[u.tipo] || '#666' }}>
+                {u.tipo === 'empresa_parceira' ? 'Empresa' : u.tipo}
+              </span>
               <span style={styles.cell}>{u.curso_vinculo || u.curso || '—'}</span>
               <span style={styles.cell}>{u.matricula || '—'}</span>
             </div>
