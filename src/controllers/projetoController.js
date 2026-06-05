@@ -175,3 +175,36 @@ exports.vincularCategoria = async (req, res) => {
   if (error) return res.status(400).json({ erro: error.message });
   res.json(data);
 };
+
+exports.curtir = async (req, res) => {
+  const empresa_id = req.usuario.id;
+  const projeto_id = req.params.id;
+
+  const { data: existente } = await supabase
+    .from('curtidas')
+    .select('id')
+    .eq('projeto_id', projeto_id)
+    .eq('empresa_id', empresa_id)
+    .single();
+
+  if (existente) {
+    await supabase.from('curtidas').delete().eq('id', existente.id);
+    return res.json({ curtido: false });
+  }
+
+  await supabase.from('curtidas').insert([{ projeto_id, empresa_id }]);
+  res.json({ curtido: true });
+};
+
+exports.getCurtidas = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.usuario.id;
+
+  const { data } = await supabase
+    .from('curtidas')
+    .select('empresa_id, usuarios(nome)')
+    .eq('projeto_id', id);
+
+  const curtido = data?.some(c => c.empresa_id === empresa_id);
+  res.json({ total: data?.length || 0, curtido, empresas: data || [] });
+};
