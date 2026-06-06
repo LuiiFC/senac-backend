@@ -26,14 +26,6 @@ exports.listar = async (req, res) => {
     if (turmaIds.length === 0) return res.json([]);
     query = query.in('turma_id', turmaIds);
   } else if (tipo === 'coordenador') {
-    // coordenador vê apenas projetos do seu curso
-    const { data: turmas } = await supabase
-      .from('turmas')
-      .select('id')
-      .eq('curso', curso_vinculo);
-    const turmaIds = turmas?.map(t => t.id) || [];
-    if (turmaIds.length === 0) return res.json([]);
-    query = query.in('turma_id', turmaIds);
   }
 
   const { data, error } = await query;

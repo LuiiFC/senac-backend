@@ -24,11 +24,30 @@ exports.criar = async (req, res) => {
 
 exports.aprovarMatricula = async (req, res) => {
   const { matricula_id } = req.params;
+  const { tipo, curso_vinculo } = req.usuario;
+
+  // Busca a matrícula com a turma para verificar o curso
+  const { data: matricula, error: erroBusca } = await supabase
+    .from('matriculas')
+    .select('*, turmas(curso)')
+    .eq('id', matricula_id)
+    .single();
+
+  if (erroBusca || !matricula) return res.status(404).json({ erro: 'Matrícula não encontrada' });
+
+  // Coordenador e professor só podem aprovar alunos do seu curso
+  if (['coordenador', 'professor'].includes(tipo)) {
+    if (matricula.turmas?.curso !== curso_vinculo) {
+      return res.status(403).json({ erro: 'Você só pode aprovar alunos do seu curso' });
+    }
+  }
+
   const { data, error } = await supabase
     .from('matriculas')
     .update({ aprovado: true })
     .eq('id', matricula_id)
     .select().single();
+
   if (error) return res.status(400).json({ erro: error.message });
   res.json(data);
 };

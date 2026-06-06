@@ -28,7 +28,8 @@ exports.criar = async (req, res) => {
       return res.status(403).json({ erro: 'Você só pode avaliar projetos do seu curso' });
   }
 
-  const tipo_avaliador = tipo === 'aluno' ? 'aluno' : 'professor';
+  
+  const tipo_avaliador = tipo === 'aluno' ? 'aluno' : tipo; // preserva 'coordenador', 'professor', 'empresa_parceira'
 
   const { data, error } = await supabase
     .from('avaliacoes')
