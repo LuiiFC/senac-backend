@@ -1,5 +1,13 @@
 # SENAC Integrated Projects System
 
+The team:
+Sillvoney,
+Pedro Ruan,
+Debora Rafaelle,
+Half Ukan,
+Cristiano,
+Luis Felipe.
+
 ## About the Project
 
 The SENAC Integrated Projects System is a full-stack web application developed to digitalize and centralize the academic project management workflow at SENAC (National Commercial Apprenticeship Service) institutions. The platform was conceived to replace manual and fragmented processes, offering a unified digital environment where every stakeholder in the academic ecosystem — students, professors, coordinators, and partner companies — can interact with academic projects in a structured, traceable, and efficient manner.
